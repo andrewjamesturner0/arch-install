@@ -1,0 +1,2 @@
+Cmnd_Alias POWER = /usr/bin/shutdown, /usr/bin/reboot, /sbin/halt, /sbin/reboot, /sbin/poweroff
+

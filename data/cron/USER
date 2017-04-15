@@ -1,0 +1,11 @@
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+# min(0-59), hour(0-23, 0=12am), day(1-31), month(1-12), weekday(0-6, 0=Sun), command
+#
+## sync backgrounds
+# 1 9,12,17,20 * * * /usr/bin/rsync -am --delete "$HOME/Dropbox/Photos/Desktops/" "$HOME/.cache/gnome-control-center/backgrounds" > /dev/null 2>&1
+#
+## move photos
+# 2 9,20 * * * /usr/bin/mv "$HOME"/Dropbox/Camera\ Uploads/* "$HOME/Pictures/From-iPad/" > /dev/null 2>&1
+#
+## cleanup downloads folder
+# 2 9,20 * * * /usr/bin/find "$HOME/Downloads/" -mtime +30 -delete > /dev/null 2>&1
