@@ -1,1 +1,1 @@
-include puppet-archlinux
+include archlinux
