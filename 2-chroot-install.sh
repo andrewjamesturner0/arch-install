@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #install_scripts=( \
-#    20-grub.sh \
+#    20-grub-bios.sh \
 #    20-mkinitcpio.conf.sh \
 #    20-services.sh \
 #    20-pacman.conf.sh)
