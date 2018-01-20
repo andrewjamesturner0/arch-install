@@ -1,4 +1,0 @@
-ajt ALL=NOPASSWD:/usr/bin/pacman
-ajt ALL=NOPASSWD:/usr/bin/pacdiff
-ajt ALL=NOPASSWD:POWER
-
