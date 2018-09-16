@@ -32,14 +32,13 @@ msg1() {
 
 ## === main ===
 main() {
-if [[ ! -d log ]]; then mkdir "log"; fi
 cd scripts
 for i in ${install_scripts[@]}; do
     msg0 "Running: ${i}"
-    if ./${i} > ../log/${i%%.*}.log 2>&1; then
+    if ./${i}; then
         msg1 "Success"
     else
-        msg1 "Error: See log/${i%%.*}.log"
+        msg1 "Error"
         exit 1
     fi
 done
