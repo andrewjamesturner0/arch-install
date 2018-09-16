@@ -12,6 +12,7 @@ if ! grep archzfs "${_pacman_conf}"; then
     echo 'Server = http://archzfs.com/$repo/x86_64' >> "${_pacman_conf}"
 fi
 
-arch-chroot /mnt /bin/bash -c 'pacman-key -r 5E1ABF240EE7A126'
-arch-chroot /mnt /bin/bash -c 'pacman-key --lsign-key 5E1ABF240EE7A126'
-arch-chroot /mnt /bin/bash -c 'pacman -Sy archzfs-linux'
+arch-chroot /mnt /bin/bash -c 'pacman-key --init'
+arch-chroot /mnt /bin/bash -c 'pacman-key -r F75D9D76'
+arch-chroot /mnt /bin/bash -c 'pacman-key --lsign-key F75D9D76'
+arch-chroot /mnt /bin/bash -c 'pacman -Sy --noconfirm archzfs-linux'
