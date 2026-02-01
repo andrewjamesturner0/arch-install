@@ -10,7 +10,9 @@ Automated Arch Linux installation framework using modular bash scripts across 4 
 
 ### Configuration
 
-All configurable values live in `config.sh` at the repo root. This includes the storage variant, target device, hostname, locale, timezone, ZFS settings, and package lists. All scripts inherit these via `looper.sh`.
+All configurable values live in `config.sh` at the repo root. This includes the storage variant, target device, hostname, locale, timezone, ZFS settings, package lists, and Puppet user settings. All scripts inherit these via `looper.sh`.
+
+Sensitive values (password hashes) go in `secrets.yaml` (gitignored). Copy `secrets.yaml.example` to get started.
 
 ### Execution Framework
 
@@ -28,7 +30,7 @@ Scripts in `scripts/` are prefixed by stage number. The second digit selects the
 - **Stage 1** (`1-pre-install.sh` → `scripts/1x-*.sh`): Partition disks, create filesystems, pacstrap base system. Includes device validation and destructive operation warning.
 - **Stage 2** (`2-chroot-install.sh` → `scripts/2x-*.sh`): Bootloader, mkinitcpio hooks, pacman config, services. Shared scripts (`20-*.sh`) are reused across variants.
 - **Stage 3** (`3-post-reboot.sh` → `scripts/3x-*.sh`): Hostname, locale, timezone (variant-independent).
-- **Stage 4** (`4-run-puppet.sh` → `scripts/4x-*.sh`): Installs Puppet, applies `environments/site.pp`.
+- **Stage 4** (`4-run-puppet.sh` → `scripts/39-*.sh`, `scripts/4x-*.sh`): Generates Facter facts from `config.sh` + `secrets.yaml`, installs Puppet, applies `environments/site.pp`.
 
 ### Storage Variants
 
@@ -44,11 +46,20 @@ Selected by `VARIANT` in `config.sh`, dispatched via `case` statements in stage 
 
 Base scripts (`20-pacman.conf.sh`, `20-services.sh`) handle shared configuration. Variant-specific scripts (`22-pacman.conf-zfs.sh`, `22-services-zfs.sh`) only add their incremental changes and are listed after the base scripts in the stage 2 array.
 
+### Puppet Module (`puppet/archlinux/`)
+
+Bundled Puppet module for desktop system configuration. Key design:
+
+- **`params.pp`**: Reads all user/system config from Facter external facts (`$facts['arch_user']`, etc.) set by `scripts/39-generate-puppet-facts.sh`. No hardcoded values.
+- **`secrets.yaml`** (repo root, gitignored): Holds password hashes. Parsed by the facts script and written to `/etc/facter/facts.d/arch_install.yaml`.
+- Classes use `inherits archlinux::params` to access shared parameters.
+- `init.pp` includes all sub-classes: packages, services, user, guestuser, sudo, ssh, usercron, xorg, gnome, printing, etc.
+
 ### Key Conventions
 
 - All scripts use `set -euo pipefail` and `#!/usr/bin/env bash`
 - `_repo_dir` (set by looper.sh) is available in all scripts for absolute path references
-- Config variables from `config.sh` are available in all scripts (e.g., `INSTALL_DEVICE`, `ZFS_POOL`, `ZFS_USERS`)
+- Config variables from `config.sh` are available in all scripts (e.g., `INSTALL_DEVICE`, `ZFS_POOL`, `ZFS_USERS`, `PUPPET_USER`)
 - `genfstab` uses `>` (overwrite) not `>>` (append) for idempotency
 - `22-bootctl.sh` auto-detects the encrypted partition UUID via `blkid`
 

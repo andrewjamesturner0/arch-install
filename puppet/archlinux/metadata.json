@@ -1,0 +1,14 @@
+{
+  "name": "archlinux-archlinux",
+  "version": "0.0.1",
+  "author": "archlinux",
+  "summary": "Puppet module for Arch Linux desktop configuration",
+  "license": "GPLv3",
+  "source": "https://github.com/andrewjamesturner0/arch-install",
+  "project_page": "https://github.com/andrewjamesturner0/arch-install",
+  "issues_url": "https://github.com/andrewjamesturner0/arch-install/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}

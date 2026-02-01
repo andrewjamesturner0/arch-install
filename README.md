@@ -8,7 +8,7 @@ Automated Arch Linux installation scripts supporting three storage configuration
 | `luks-btrfs-uefi` | LUKS | btrfs (with subvolumes) | UEFI | GRUB |
 | `luks-zfs-uefi` | LUKS | ZFS (with datasets) | UEFI | systemd-boot |
 
-The installation is split into four stages, each run at a different point in the Arch install process. All configuration is centralized in a single file.
+The installation is split into four stages, each run at a different point in the Arch install process. System settings live in `config.sh`; sensitive values (password hashes) live in `secrets.yaml`.
 
 ## Prerequisites
 
@@ -26,15 +26,9 @@ git clone https://github.com/andrewjamesturner0/arch-install
 cd arch-install
 ```
 
-If you plan to use Stage 4 (Puppet), also clone the Puppet module:
+### 2. Configure
 
-```bash
-git clone https://github.com/andrewjamesturner0/puppet-archlinux puppet/archlinux
-```
-
-### 2. Edit configuration
-
-All settings are in `config.sh`. At minimum, review and adjust:
+Edit `config.sh`. At minimum, review and adjust:
 
 ```bash
 VARIANT="luks-zfs-uefi"       # Choose your storage variant
@@ -44,7 +38,7 @@ INSTALL_LOCALE="en_GB.UTF-8"
 INSTALL_TIMEZONE="Europe/London"
 ```
 
-For the ZFS variant, also configure:
+For the ZFS variant, also set:
 
 ```bash
 ZFS_POOL="system"
@@ -82,7 +76,7 @@ reboot
 
 ### 5. Stage 3 — Post-reboot setup
 
-After rebooting into the new system, log in as root and start networking:
+After rebooting into the new system, log in as root and start networking. The repo is available at `/root/arch-install` (copied during Stage 1).
 
 ```bash
 systemctl start dhcpcd.service
@@ -94,13 +88,40 @@ This sets the hostname, locale, and timezone based on your `config.sh` values.
 
 ### 6. Stage 4 — Puppet (optional)
 
-Installs Puppet and applies system configuration from the `puppet-archlinux` module. Requires the module to be cloned into `puppet/archlinux` (see Step 1).
+Applies desktop system configuration (packages, users, GNOME, printing, sudo, SSH hardening, etc.) via the bundled Puppet module.
 
-If the Puppet manifests include user accounts, add the correct password hash to `manifests/params.pp` before running.
+**Before running**, complete two additional configuration steps:
+
+1. Set the Puppet user variables in `config.sh`:
+
+```bash
+PUPPET_USER="ajt"
+PUPPET_USER_FULLNAME="Andrew Turner"
+PUPPET_USER_UID="1001"
+PUPPET_GUEST_USER="guest"
+PUPPET_GUEST_UID="1002"
+```
+
+2. Create `secrets.yaml` with password hashes:
+
+```bash
+cp secrets.yaml.example secrets.yaml
+```
+
+Generate hashes with `openssl passwd -6` and paste them into the file:
+
+```yaml
+user_passwd_hash: "$6$..."
+guest_passwd_hash: "$6$..."
+```
+
+Then run:
 
 ```bash
 ./4-run-puppet.sh
 ```
+
+This generates Facter external facts from `config.sh` and `secrets.yaml`, installs Puppet, and applies the manifests.
 
 ## Storage Variant Details
 
@@ -147,6 +168,7 @@ Compression: LZ4. The encrypted partition UUID is automatically detected for the
 
 ```
 config.sh                  # All configurable values (edit this)
+secrets.yaml.example       # Template for password hashes (copy to secrets.yaml)
 looper.sh                  # Execution framework (sources config, runs scripts)
 1-pre-install.sh           # Stage 1 entry point
 2-chroot-install.sh        # Stage 2 entry point
@@ -156,7 +178,12 @@ scripts/
   1x-*.sh                  # Disk prep + base install (one per variant)
   2x-*.sh                  # Chroot config (bootloader, hooks, services, pacman)
   3x-*.sh                  # Post-reboot (hostname, locale, timezone)
-  4x-*.sh                  # Puppet setup
+  39-generate-puppet-facts.sh  # Generates Facter facts from config + secrets
+  40-prepare-puppet.sh     # Installs Puppet and applies manifests
+puppet/archlinux/          # Puppet module (bundled, no separate clone needed)
+  manifests/               # Puppet classes
+  files/                   # Static config files deployed by Puppet
+  templates/               # EPP templates
 environments/
   site.pp                  # Puppet entry point
 ```
@@ -172,6 +199,8 @@ Each stage script (e.g., `1-pre-install.sh`) sources `looper.sh`, which:
 3. Provides `msg0`/`msg1` output helpers and a `main()` function
 
 The stage script then populates an `install_scripts` array (selected by `VARIANT`) and calls `main()`, which executes each script in sequence, stopping on the first failure.
+
+Stage 4 adds a pre-step: `39-generate-puppet-facts.sh` reads `config.sh` variables and `secrets.yaml` password hashes, then writes them as Facter external facts to `/etc/facter/facts.d/arch_install.yaml`. The Puppet manifests read these facts instead of containing hardcoded values.
 
 ## License
 

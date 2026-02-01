@@ -1,0 +1,1 @@
+Cmnd_Alias POWER = /usr/bin/systemctl poweroff, /usr/bin/systemctl reboot, /usr/bin/systemctl suspend, /usr/bin/systemctl hibernate

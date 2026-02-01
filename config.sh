@@ -23,3 +23,10 @@ PACKAGES_BASE="base base-devel git vim openssh"
 PACKAGES_LVM="grub"
 PACKAGES_BTRFS="grub efibootmgr btrfs-progs"
 PACKAGES_ZFS="efibootmgr"
+
+# Puppet user configuration
+PUPPET_USER="ajt"
+PUPPET_USER_FULLNAME="Andrew Turner"
+PUPPET_USER_UID="1001"
+PUPPET_GUEST_USER="guest"
+PUPPET_GUEST_UID="1002"
