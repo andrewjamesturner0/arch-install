@@ -1,6 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-_HOSTNAME="archlinux"
-
-hostnamectl set-hostname "${_HOSTNAME}"
+hostnamectl set-hostname "${INSTALL_HOSTNAME}"

@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 # install grub
-arch-chroot /mnt /bin/bash -c "grub-install --target=i386-pc --recheck /dev/sda"
+arch-chroot /mnt /bin/bash -c "grub-install --target=i386-pc --recheck ${INSTALL_DEVICE}"
 
 mkdir -p '/mnt/boot/grub/locale'
 

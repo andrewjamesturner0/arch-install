@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-timedatectl set-timezone Europe/London
+timedatectl set-timezone "${INSTALL_TIMEZONE}"
 
 hwclock --systohc --utc
