@@ -39,8 +39,7 @@ Selected by `VARIANT` in `config.sh`, dispatched via `case` statements in stage 
 | VARIANT | Stack | Boot Mode |
 |---------|-------|-----------|
 | `lvm-ext4-bios` | LVM + ext4 | BIOS/GRUB |
-| `luks-btrfs-uefi` | LUKS + btrfs | UEFI/GRUB |
-| `luks-zfs-uefi` | LUKS + ZFS | UEFI/systemd-boot |
+| `zfs-uefi` | ZFS | UEFI/systemd-boot |
 
 ### Script Deduplication
 
@@ -61,7 +60,7 @@ Bundled Puppet module for desktop system configuration. Key design:
 - `_repo_dir` (set by looper.sh) is available in all scripts for absolute path references
 - Config variables from `config.sh` are available in all scripts (e.g., `INSTALL_DEVICE`, `ZFS_POOL`, `ZFS_USERS`, `PUPPET_USER`)
 - `genfstab` uses `>` (overwrite) not `>>` (append) for idempotency
-- `22-bootctl.sh` auto-detects the encrypted partition UUID via `blkid`
+- `22-bootctl.sh` configures systemd-boot with the ZFS boot entry
 
 ## Lint
 

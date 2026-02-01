@@ -7,27 +7,14 @@ parted -s "${INSTALL_DEVICE}" mklabel gpt
 # create partitions
 parted -s "${INSTALL_DEVICE}" -- \
     mkpart ESP fat32 1M 1G \
-    mkpart primary 1G 9G \
-    mkpart primary 9G 100%
+    mkpart primary 1G 100%
 
 parted -s "${INSTALL_DEVICE}" -- set 1 boot on
-
-# encrypt main partition
-cryptsetup \
-    --cipher aes-xts-plain64 \
-    --key-size 512 \
-    --hash sha512 \
-    --iter-time 5000 \
-    --use-random \
-    --verify-passphrase \
-    luksFormat "${INSTALL_DEVICE}3"
 
 # create filesystems
 mkfs.fat -F32 "${INSTALL_DEVICE}1"
 
-cryptsetup luksOpen "${INSTALL_DEVICE}3" luksroot
-
-zpool create -f -o ashift=12 "${ZFS_POOL}" /dev/mapper/luksroot
+zpool create -f -o ashift=12 "${ZFS_POOL}" "${INSTALL_DEVICE}2"
 zfs set compression=lz4 "${ZFS_POOL}"
 
 zfs create -o mountpoint=none "${ZFS_POOL}/ROOT"

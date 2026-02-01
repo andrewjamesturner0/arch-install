@@ -1,12 +1,11 @@
 # arch-install
 
-Automated Arch Linux installation scripts supporting three storage configurations:
+Automated Arch Linux installation scripts supporting two storage configurations:
 
-| Variant | Encryption | Filesystem | Boot Mode | Bootloader |
-|---------|-----------|------------|-----------|------------|
-| `lvm-ext4-bios` | None | ext4 on LVM | BIOS | GRUB |
-| `luks-btrfs-uefi` | LUKS | btrfs (with subvolumes) | UEFI | GRUB |
-| `luks-zfs-uefi` | LUKS | ZFS (with datasets) | UEFI | systemd-boot |
+| Variant | Filesystem | Boot Mode | Bootloader |
+|---------|------------|-----------|------------|
+| `lvm-ext4-bios` | ext4 on LVM | BIOS | GRUB |
+| `zfs-uefi` | ZFS (with datasets) | UEFI | systemd-boot |
 
 The installation is split into four stages, each run at a different point in the Arch install process. System settings live in `config.sh`; sensitive values (password hashes) live in `secrets.yaml`.
 
@@ -31,7 +30,7 @@ cd arch-install
 Edit `config.sh`. At minimum, review and adjust:
 
 ```bash
-VARIANT="luks-zfs-uefi"       # Choose your storage variant
+VARIANT="zfs-uefi"             # Choose your storage variant
 INSTALL_DEVICE="/dev/sda"      # Target disk (WILL BE WIPED)
 INSTALL_HOSTNAME="archlinux"
 INSTALL_LOCALE="en_GB.UTF-8"
@@ -54,8 +53,6 @@ Partitions the disk, creates filesystems, and installs the base system via `pacs
 ```bash
 ./1-pre-install.sh
 ```
-
-For encrypted variants (`luks-btrfs-uefi`, `luks-zfs-uefi`), you will be prompted to set the LUKS passphrase interactively.
 
 ### 4. Stage 2 — Chroot configuration
 
@@ -136,25 +133,14 @@ Creates a GPT partition table with a 2M BIOS boot partition and an LVM partition
 | `homelv` | 5G | ext4 |
 | `swaplv` | 1G | swap |
 
-### `luks-btrfs-uefi`
+### `zfs-uefi`
 
-Creates a GPT partition table with a 1G FAT32 ESP and a LUKS-encrypted partition. Inside the encrypted volume, btrfs subvolumes are created:
-
-- `system/root` — mounted at `/`
-- `system/home` — mounted at `/home`
-- `snapshots` — for manual snapshot management
-
-Compression: LZO. Encryption: AES-XTS-plain64, 512-bit key, SHA-512, 5000ms iter-time.
-
-### `luks-zfs-uefi`
-
-Creates a GPT partition table with three partitions:
+Creates a GPT partition table with two partitions:
 
 | Partition | Size | Purpose |
 |-----------|------|---------|
 | 1 | 1G | FAT32 ESP |
-| 2 | 8G | (reserved) |
-| 3 | remainder | LUKS-encrypted, ZFS pool |
+| 2 | remainder | ZFS pool |
 
 The ZFS pool (`system` by default) contains:
 
@@ -162,7 +148,7 @@ The ZFS pool (`system` by default) contains:
 - `DATA/home` — home directory root
 - `DATA/home/<user>` — per-user datasets (created from `ZFS_USERS` in config)
 
-Compression: LZ4. The encrypted partition UUID is automatically detected for the boot entry.
+Compression: LZ4.
 
 ## Project Structure
 
@@ -188,7 +174,7 @@ environments/
   site.pp                  # Puppet entry point
 ```
 
-Scripts are named `<stage><variant>-<description>.sh`. The variant digit maps to: `0` = LVM/BIOS, `1` = LUKS/btrfs/UEFI, `2` = LUKS/ZFS/UEFI. Scripts prefixed `20-` are shared across all variants.
+Scripts are named `<stage><variant>-<description>.sh`. The variant digit maps to: `0` = LVM/BIOS, `2` = ZFS/UEFI. Scripts prefixed `20-` are shared across all variants.
 
 ## How It Works
 

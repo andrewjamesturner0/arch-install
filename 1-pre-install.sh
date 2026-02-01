@@ -15,10 +15,8 @@ read -rp "Continue? [y/N] " confirm
 case "${VARIANT}" in
     lvm-ext4-bios)
         install_scripts=(10-prep-and-install-lvm-ext4-bios.sh) ;;
-    luks-btrfs-uefi)
-        install_scripts=(11-prep-and-install-luks-btrfs-uefi.sh) ;;
-    luks-zfs-uefi)
-        install_scripts=(12-prep-and-install-luks-zfs-uefi.sh) ;;
+    zfs-uefi)
+        install_scripts=(12-prep-and-install-zfs-uefi.sh) ;;
     *)
         echo "ERROR: Unknown VARIANT '${VARIANT}'" >&2; exit 1 ;;
 esac
